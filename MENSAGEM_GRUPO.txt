@@ -1,0 +1,8 @@
+Pessoal, preparei minha entrega inicial do EmpregaBH: estrutura do projeto,
+configuracao do ambiente local com PostgreSQL, FastAPI e React, instrucoes de
+execucao, automacao de verificacoes e a matriz dos testes integrados.
+
+O PDF resume a minha parte e o ZIP traz os arquivos para incorporar ao repositorio.
+Os testes do sistema completo e a documentacao final serao concluidos depois que
+integrarmos dados, banco/API, modelo e interface de cada frente. Deixei os casos
+pendentes identificados e alguns pontos do plano de testes para alinharmos.

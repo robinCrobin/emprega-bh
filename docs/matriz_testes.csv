@@ -1,0 +1,21 @@
+﻿ID;Requisito;Cenario;Preparacao;Resultado esperado;Apoio;Estado;Resultado obtido;Evidencia;Commit ou versao;Data;Defeito
+CT-INT-01;RF04;Ocupacao com historico suficiente;Carga conhecida com >=8 trimestres e modelo disponivel;"Status 200; historico correto; previsao numerica para o trimestre seguinte";Nicolas e Davi;Nao executado;;;;;
+CT-INT-02;RF05;Historico insuficiente;"Ocupacoes com 0 a 7 trimestres; incluir 7";"Previsao null; motivo explicito; historico disponivel preservado; sem inferencia";Nicolas e Davi;Nao executado;;;;;
+CT-INT-03;RF03;Tendencia e limites;"Quatro periodos de base 100; recentes 111, 110, 100, 90, 89";Crescente, estavel, estavel, estavel e decrescente, respectivamente;Nicolas e Davi;Nao executado;;;;;
+CT-INT-04;RF01;Busca tolerante;Mesmo termo parcial com caixa e acentos diferentes;"Mesmos IDs de ocupacoes equivalentes; busca parcial funciona";Nicolas e Joao Pedro;Nao executado;;;;;
+CT-INT-05;RF07/RF08;Pipeline e carga;Registros de referencia validos, invalidos e duplicados;"Limpeza e agregacao coerentes; reexecucao nao duplica contagens";Roberta e Nicolas;Nao executado;;;;;
+CT-INT-06;RF02/RF04;Consistencia banco API;Carga e previsao de referencia;Periodos e quantidades da API iguais aos valores persistidos;Nicolas e Davi;Nao executado;;;;;
+CT-INT-07;Arquitetura;Consulta sem depender de CKAN;"Dados carregados; acesso ao portal indisponivel";Consulta usa banco e nao refaz coleta ou treino;Nicolas e Roberta;Nao executado;;;;;
+CT-INT-08;RF03;Tendencia sem base comparavel;Base anterior zero ou menos de oito periodos;"Sem divisao por zero; retorno conforme regra a confirmar pelo grupo";Nicolas e Davi;Nao executado;;;;;
+CT-INT-09;RF04/RF05;Fronteira de oito trimestres;Exatamente oito periodos validos e modelo avaliado disponivel;Regra minima respeitada e corte temporal documentado;Davi e Nicolas;Nao executado;;;;;
+CT-UI-01;RF02/RNF02;Grafico e tempo visual;"Interface integrada; ocupacao conhecida; ambiente anotado";Grafico correto e visivel em ate 3 s no ambiente de demonstracao;Joao Pedro e Nicolas;Nao executado;;;;;
+CT-UI-02;RF03/RF04;Tendencia e previsao;Cenarios crescente, estavel e decrescente;"Numero e trimestre visiveis; tendencia coerente; casos sem previsao explicados";Joao Pedro e Davi;Nao executado;;;;;
+CT-UI-03;RF06;Aviso de estimativa;Tela com previsao;Aviso visivel: estimativa sem garantia de vaga ou emprego e sem recomendacao profissional;Joao Pedro;Nao executado;;;;;
+CT-UI-04;RNF07/RNF08;Privacidade;Inspecionar tela, DOM e respostas JSON;"Sem CNPJ nem identificador individual de vaga; ID de ocupacao permitido";Joao Pedro, Roberta e Nicolas;Nao executado;;;;;
+CT-E2E-01;Fluxo completo;Dado publico ate resultado;Versao rastreavel da coleta, carga e modelo;Ocupacao percorre pipeline, banco, API e interface com valores consistentes;Todas as frentes;Nao executado;;;;;
+CT-E2E-02;RF01/RF05;Sem resultado e historico curto;Termo inexistente e ocupacao com 7 periodos;"Mensagem clara; nao renderizar previsao ficticia";Joao Pedro e Nicolas;Nao executado;;;;;
+CT-NF-01;RNF06;Instalacao em copia limpa;"Nova pasta; sem .env; dependencias travadas";Setup, Compose e smoke executam com instrucoes do README;Nicolas e Joao Pedro;Nao executado;;;;;
+CT-NF-02;RNF01;Responsividade e teclado;"Larguras 375, 768 e 1366; navegador registrado";"Sem scroll horizontal; grafico e aviso legiveis; foco acessivel";Joao Pedro;Nao executado;;;;;
+CT-NF-03;RNF02;Latencia HTTP;"Endpoint funcional real; primeira consulta e 30 aquecidas";"Sem erros; registrar primeira, media, p95 e maximo; maximo aquecido <=3 s";Nicolas;Nao executado;;;;;
+CT-NF-04;RNF01;Jornada principal;Usuario parte da tela inicial;Concluir consulta em ate tres interacoes pelo criterio acordado;Joao Pedro;Nao executado;;;;;
+CT-ML-01;RF09;Evidencia de avaliacao temporal;Relatorio de Davi com corte, amostras e metricas;"Sem vazamento; MAE e RMSE reais; referencia no mesmo corte; limitacoes registradas";Davi;Nao executado;;;;;
