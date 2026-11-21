@@ -141,6 +141,7 @@ as verificacoes realmente executadas durante a preparacao.
 - docs/DEMONSTRACAO.md: sequencia de apresentacao apos integrar o sistema.
 - docs/ANALISE_DOCUMENTOS.md: ajustes de criterios e decisoes a alinhar.
 - docs/VALIDACAO.md: resultado da base e validacoes pendentes.
+- docs/DADOS_E_INTEGRACAO.md: contrato dos CSVs, schema PostgreSQL sugerido e endpoints planejados.
 - docs/Relatorio_Sthel_EmpregaBH.pdf: resumo para compartilhar.
 
 Dados reais e modelos devem ser adicionados pelos responsaveis de cada frente,
