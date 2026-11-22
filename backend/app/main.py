@@ -1,28 +1,21 @@
 """Base de infraestrutura. Endpoints de negocio pertencem a frente backend."""
 import os
-from pathlib import Path
 
 import psycopg
-from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-load_dotenv(Path(__file__).resolve().parents[2] / '.env', override=False)
+from app.config import database_options  # noqa: F401 (mantido para compatibilidade)
+from app.rotas import ocupacoes
 
-
-def database_options():
-    return {
-        'host': os.getenv('PGHOST', '127.0.0.1'),
-        'port': int(os.getenv('PGPORT', os.getenv('DB_PORT', '5433'))),
-        'dbname': os.getenv('POSTGRES_DB', 'empregabh'),
-        'user': os.getenv('POSTGRES_USER', 'empregabh'),
-        'password': os.getenv('POSTGRES_PASSWORD', ''),
-        'connect_timeout': 2,
-    }
-
-
-app = FastAPI(title='EmpregaBH', version='0.1.0')
+app = FastAPI(
+    title='EmpregaBH',
+    version='0.2.0',
+    description='API de consulta de vagas por ocupação em Belo Horizonte (dados da PBH). '
+                'Somente leitura de dados agregados e previsões já gravadas no PostgreSQL.',
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[v.strip() for v in os.getenv(
@@ -50,3 +43,17 @@ def ready():
     except psycopg.Error:
         return JSONResponse(status_code=503, content={'status': 'indisponivel'})
     return {'status': 'ok', 'database': 'ok'}
+
+
+app.include_router(ocupacoes.router)
+
+
+@app.exception_handler(RequestValidationError)
+async def erro_validacao(request: Request, exc: RequestValidationError):
+    campos = sorted({str(e['loc'][-1]) for e in exc.errors()})
+    return JSONResponse(status_code=422, content={'detail': 'Parâmetros inválidos: ' + ', '.join(campos) + '.'})
+
+
+@app.exception_handler(psycopg.Error)
+async def erro_banco(request: Request, exc: psycopg.Error):
+    return JSONResponse(status_code=503, content={'detail': 'Serviço temporariamente indisponível.'})
