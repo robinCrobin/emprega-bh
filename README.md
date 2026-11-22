@@ -161,3 +161,24 @@ apaga os dados locais. Alterar a senha no .env de um banco ja inicializado nao
 altera automaticamente a senha armazenada no PostgreSQL; atualizar o usuario
 no banco quando necessario. Publicacao Vercel/Render/Neon e uma etapa posterior
 ao funcionamento e a validacao das frentes.
+
+## Banco e API de ocupacoes (A07, A08, A09 - Nicolas)
+
+Esquema SQL em `database/migrations`, carga em `backend/app/banco`, API em `backend/app`.
+Passo a passo (na raiz, PowerShell; no Linux/macOS use `.venv/bin/python` e `PYTHONPATH=backend`):
+
+```powershell
+python scripts/setup_env.py
+docker compose up -d db --wait
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install --require-hashes -r backend/requirements-dev.txt
+$env:PYTHONPATH = "backend"
+.venv\Scripts\python.exe -m app.banco.cli migrar     # aplica o esquema
+.venv\Scripts\python.exe -m app.banco.cli seed       # opcional: dados FICTICIOS de desenvolvimento
+.venv\Scripts\python.exe -m app.banco.cli carregar   # carga real (data/processed/vagas_por_ocupacao_trimestre.csv)
+.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --port 8000
+.venv\Scripts\python.exe -m pytest backend/tests -v  # testes (usam um schema temporario no mesmo PostgreSQL)
+```
+
+Contrato dos endpoints: `docs/API_CONTRATO.md`. Detalhes do banco: `database/README.md`.
+Variaveis novas: `MIN_TRIMESTRES_PREVISAO` (padrao 8) e `BUSCA_LIMITE_MAXIMO` (padrao 50).
