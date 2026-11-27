@@ -182,3 +182,36 @@ $env:PYTHONPATH = "backend"
 
 Contrato dos endpoints: `docs/API_CONTRATO.md`. Detalhes do banco: `database/README.md`.
 Variaveis novas: `MIN_TRIMESTRES_PREVISAO` (padrao 8) e `BUSCA_LIMITE_MAXIMO` (padrao 50).
+
+## Interface React (A14 a A17 - Joao Pedro)
+
+Busca de ocupacao por nome (A14), grafico da serie historica com a estimativa do
+trimestre seguinte (A15), tendencia e aviso de estimativa (A16) e protecao de
+privacidade (A17), em `frontend/src`. Por enquanto a tela usa **dados
+ficticios** (`frontend/src/mock`), com o mesmo formato de `docs/API_CONTRATO.md`;
+uma faixa na tela indica esse modo. Para consumir a API real, definir
+`VITE_USE_MOCK=false` (o navegador acessa a API pelo proxy `/api`) e carregar o
+banco conforme a secao anterior.
+
+Dados ficticios de exemplo: "Analista de sistemas" (24 trimestres, com estimativa),
+"Tecnico em enfermagem" (8 trimestres, fronteira do minimo), "Auxiliar administrativo"
+(7 trimestres, sem previsao), "Vendedor" (previsao ainda nao gerada), "Motorista"
+(decrescente), "Tecnico em informatica" e "Operador de empilhadeira" (base anterior
+zero: tendencia indisponivel).
+
+Testes unitarios da interface (sem dependencias extras, Node 24), na pasta `frontend`:
+
+```sh
+npm test
+```
+
+Privacidade (A17): `frontend/src/lib/privacidade.js` deixa passar somente os campos do
+contrato; qualquer outro (CNPJ, identificador de vaga, empresa) e descartado antes de
+chegar a tela, e textos com CNPJ, CPF ou e-mail sao mascarados. A interface nao grava
+dados no navegador. Para auditar as respostas da API real (CT-UI-04), com a API e o
+banco ativos, na pasta `frontend`:
+
+```sh
+npm run verificar:privacidade -- http://127.0.0.1:8000
+```
+
