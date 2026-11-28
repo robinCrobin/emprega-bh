@@ -1,0 +1,7 @@
+# Dependencias da frente de modelagem (A10-A12). Separadas do backend para
+# manter scikit-learn/pandas fora da imagem da API, que so le previsoes gravadas.
+numpy==2.5.5
+pandas==3.1.1
+scikit-learn==1.9.1
+psycopg[binary]==3.3.3
+python-dotenv==1.2.2

@@ -7,7 +7,7 @@ Responsavel pela base e consolidacao: Sthel Felipe Torres.
 | Diretorio | Responsabilidade |
 | --- | --- |
 | pipeline, data | Roberta: coleta e tratamento; Davi: dados do modelo |
-| models | Davi: treinamento, avaliacao e artefatos |
+| modelagem, models | Davi: codigo de treino e avaliacao em modelagem; artefatos binarios em models (fora do Git) |
 | database, backend | Nicolas: esquema, carga e API |
 | frontend | Joao Pedro: interface React |
 | scripts, docs, tests, .github | Sthel: ambiente, integracao e consolidacao |

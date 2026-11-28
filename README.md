@@ -142,6 +142,7 @@ as verificacoes realmente executadas durante a preparacao.
 - docs/ANALISE_DOCUMENTOS.md: ajustes de criterios e decisoes a alinhar.
 - docs/VALIDACAO.md: resultado da base e validacoes pendentes.
 - docs/DADOS_E_INTEGRACAO.md: contrato dos CSVs, schema PostgreSQL sugerido e endpoints planejados.
+- modelagem/README.md: modelo de previsao (A10-A12), execucao, decisoes e metricas.
 - docs/Relatorio_Sthel_EmpregaBH.pdf: resumo para compartilhar.
 
 Dados reais e modelos devem ser adicionados pelos responsaveis de cada frente,
