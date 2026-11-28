@@ -1,11 +1,18 @@
 """A08: carga idempotente do CSV agregado (contrato da Roberta) no PostgreSQL.
 
 Contrato do CSV (docs/DADOS_E_INTEGRACAO.md): nome_padronizado, codigo_cbo,
-status_validacao, quarter (AAAA-TN) e vacancies. A chave lógica é
-(codigo_cbo, quarter). Lacunas NÃO são preenchidas com zero.
+status_validacao, quarter (AAAA-TN) e vacancies. A identidade da ocupação é o
+codigo_cbo. Lacunas NÃO são preenchidas com zero.
+
+O pipeline agrega por nome + CBO + trimestre; por isso um mesmo CBO pode vir com
+nomes diferentes e mais de uma linha por trimestre. A carga SOMA as vagas por
+(CBO, trimestre) e adota como nome o que tem mais vagas no total (empate: ordem
+alfabética). Linhas totalmente repetidas (mesmo CBO, nome e trimestre) indicam
+erro no arquivo e continuam sendo rejeitadas.
 """
 import csv
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,14 +34,16 @@ class ResumoCarga:
     ocupacoes: int
     linhas_vagas: int
     linhas_ignoradas: int
+    linhas_consolidadas: int = 0  # linhas de nomes alternativos somadas ao mesmo CBO
 
 
-def ler_csv(caminho: Path) -> tuple[dict[str, str], list[tuple[str, int, int, int]], int]:
-    """Valida o CSV e devolve (nomes por CBO, linhas (cbo, ano, tri, vagas), ignoradas)."""
-    nomes: dict[str, str] = {}
-    linhas: list[tuple[str, int, int, int]] = []
-    vistos: set[tuple[str, int, int]] = set()
+def ler_csv(caminho: Path) -> tuple[dict[str, str], list[tuple[str, int, int, int]], int, int]:
+    """Valida o CSV; devolve (nome por CBO, linhas (cbo, ano, tri, vagas), ignoradas, consolidadas)."""
+    vagas_por_nome: dict[tuple[str, str], int] = defaultdict(int)
+    somadas: dict[tuple[str, int, int], int] = defaultdict(int)
+    vistos: set[tuple[str, str, int, int]] = set()
     ignoradas = 0
+    total_linhas = 0
     with caminho.open('r', newline='', encoding='utf-8-sig') as origem:
         leitor = csv.DictReader(origem)
         faltando = set(COLUNAS_OBRIGATORIAS) - set(leitor.fieldnames or ())
@@ -59,19 +68,28 @@ def ler_csv(caminho: Path) -> tuple[dict[str, str], list[tuple[str, int, int, in
                 raise ErroCarga(f'Linha {numero}: vacancies não é inteiro: {linha["vacancies"]!r}') from None
             if vagas < 0:
                 raise ErroCarga(f'Linha {numero}: vacancies negativo')
-            if nomes.setdefault(cbo, nome) != nome:
-                raise ErroCarga(f'Linha {numero}: CBO {cbo} com dois nomes diferentes')
-            chave = (cbo, int(casado.group(1)), int(casado.group(2)))
-            if chave in vistos:
-                raise ErroCarga(f'Linha {numero}: combinação CBO/trimestre duplicada: {chave}')
-            vistos.add(chave)
-            linhas.append((*chave, vagas))
-    return nomes, linhas, ignoradas
+            ano, tri = int(casado.group(1)), int(casado.group(2))
+            repetida = (cbo, nome, ano, tri)
+            if repetida in vistos:
+                raise ErroCarga(f'Linha {numero}: combinação CBO/nome/trimestre duplicada: {repetida}')
+            vistos.add(repetida)
+            vagas_por_nome[(cbo, nome)] += vagas
+            somadas[(cbo, ano, tri)] += vagas
+            total_linhas += 1
+    # Nome adotado por CBO: o de maior total de vagas; empate resolvido por ordem alfabética.
+    escolhido: dict[str, tuple[int, str]] = {}
+    for (cbo, nome), total in vagas_por_nome.items():
+        atual = escolhido.get(cbo)
+        if atual is None or (-total, nome) < (-atual[0], atual[1]):
+            escolhido[cbo] = (total, nome)
+    nomes = {cbo: nome for cbo, (_, nome) in escolhido.items()}
+    linhas = [(cbo, ano, tri, vagas) for (cbo, ano, tri), vagas in sorted(somadas.items())]
+    return nomes, linhas, ignoradas, total_linhas - len(linhas)
 
 
 def carregar_csv(conexao: psycopg.Connection, caminho: Path) -> ResumoCarga:
     """Upsert em transação única: reexecutar o mesmo arquivo não duplica dados."""
-    nomes, linhas, ignoradas = ler_csv(caminho)
+    nomes, linhas, ignoradas, consolidadas = ler_csv(caminho)
     with conexao.transaction(), conexao.cursor() as cur:
         ids: dict[str, int] = {}
         for cbo, nome in nomes.items():
@@ -90,4 +108,4 @@ def carregar_csv(conexao: psycopg.Connection, caminho: Path) -> ResumoCarga:
             'DO UPDATE SET quantidade_vagas = EXCLUDED.quantidade_vagas',
             [(ids[cbo], ano, tri, vagas) for cbo, ano, tri, vagas in linhas],
         )
-    return ResumoCarga(len(nomes), len(linhas), ignoradas)
+    return ResumoCarga(len(nomes), len(linhas), ignoradas, consolidadas)

@@ -34,7 +34,8 @@ def main(argv: list[str] | None = None) -> int:
                     return 1
                 resumo = carregar_csv(conexao, arquivo)
                 print(f'Carga concluída: {resumo.ocupacoes} ocupações, '
-                      f'{resumo.linhas_vagas} linhas de vagas, {resumo.linhas_ignoradas} ignoradas.')
+                      f'{resumo.linhas_vagas} linhas de vagas, {resumo.linhas_ignoradas} ignoradas, '
+                      f'{resumo.linhas_consolidadas} somadas por CBO (nomes alternativos).')
     except ErroCarga as erro:
         print(f'Arquivo inválido, nada foi gravado: {erro}', file=sys.stderr)
         return 1

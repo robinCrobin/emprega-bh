@@ -35,6 +35,20 @@ def test_recarga_atualiza_valores_sem_duplicar(banco, tmp_path):
     assert banco.execute('SELECT quantidade_vagas FROM vagas_trimestre').fetchall() == [(9,)]
 
 
+def test_mesmo_cbo_com_nomes_diferentes_soma_vagas_e_escolhe_nome_principal(banco, tmp_path):
+    arq = escrever(tmp_path, ['Padeiro,999201,validado,2024-T1,5\n',
+                              'Padeiro confeiteiro,999201,validado,2024-T1,2\n',
+                              'Padeiro,999201,validado,2024-T2,4\n',
+                              'Padeiro confeiteiro,999201,validado,2024-T3,1\n'])
+    r = carregar_csv(banco, arq)
+    assert (r.ocupacoes, r.linhas_vagas, r.linhas_consolidadas) == (1, 3, 1)
+    assert banco.execute('SELECT nome FROM ocupacao').fetchall() == [('Padeiro',)]
+    assert banco.execute('SELECT ano, trimestre, quantidade_vagas FROM vagas_trimestre ORDER BY 1,2').fetchall() == [
+        (2024, 1, 7), (2024, 2, 4), (2024, 3, 1)]
+    carregar_csv(banco, arq)  # continua idempotente
+    assert contar(banco, 'vagas_trimestre') == 3
+
+
 def test_linhas_nao_validadas_sao_ignoradas(banco, tmp_path):
     r = carregar_csv(banco, escrever(tmp_path, ['Padeiro,999201,validado,2024-T1,5\n',
                                                 'Outro,999202,pendente,2024-T1,5\n']))
